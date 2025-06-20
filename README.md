@@ -67,7 +67,7 @@ pip install -r requirements.txt
 python run.py
 ```
 
-The application will be available at `http://localhost:5000`
+The application will be available at `http://localhost:1337`
 
 ### Production
 Set environment variables:
@@ -173,4 +173,4 @@ The project structure supports easy testing:
 
 ## License
 
-[Add your license information here]
+MIT
