@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  resolviq:
+    build: .
+    ports:
+      - "1337:1337"
+    volumes:
+      - .:/app
+      - /app/__pycache__
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+    restart: unless-stopped

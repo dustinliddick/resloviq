@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - ResolvIQ{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto text-center">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="mb-6">
+            <i class="fas fa-server text-6xl text-red-500 mb-4"></i>
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">500</h1>
+            <h2 class="text-2xl font-semibold text-gray-600 mb-4">Internal Server Error</h2>
+            <p class="text-gray-500 mb-6">
+                Something went wrong on our end. We're working to fix it.
+            </p>
+        </div>
+        
+        <div class="space-x-4">
+            <a
+                href="{{ url_for('troubleshooting.index') }}"
+                class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 inline-flex items-center gap-2"
+            >
+                <i class="fas fa-home"></i>
+                Go Home
+            </a>
+            <button
+                onclick="window.location.reload()"
+                class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 inline-flex items-center gap-2"
+            >
+                <i class="fas fa-redo"></i>
+                Try Again
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Generated Report - ResolvIQ{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg">
+    <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Generated Technical Report</h2>
+            <div class="space-x-2">
+                <button
+                    onclick="copyToClipboard()"
+                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
+                >
+                    <i class="fas fa-copy"></i>
+                    Copy Report
+                </button>
+                <a
+                    href="{{ url_for('troubleshooting.index') }}"
+                    class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 inline-flex items-center gap-2"
+                >
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Editor
+                </a>
+                <form action="{{ url_for('troubleshooting.reset_session') }}" method="post" class="inline">
+                    <button
+                        type="submit"
+                        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center gap-2"
+                        onclick="return confirm('Are you sure you want to start a new issue? This will clear all current data.')"
+                    >
+                        <i class="fas fa-undo"></i>
+                        Start New Issue
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="bg-gray-100 p-4 rounded-lg">
+            <pre id="report-content" class="whitespace-pre-wrap text-sm font-mono overflow-x-auto">{{ report }}</pre>
+        </div>
+    </div>
+</div>
+
+<script>
+async function copyToClipboard() {
+    const reportText = document.getElementById('report-content').textContent;
+    try {
+        await navigator.clipboard.writeText(reportText);
+        
+        // Show success feedback
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        button.classList.add('bg-green-600');
+        
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.classList.remove('bg-green-600');
+            button.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        }, 2000);
+    } catch (err) {
+        console.error('Failed to copy: ', err);
+        alert('Failed to copy to clipboard. Please select and copy manually.');
+    }
+}
+</script>
+{% endblock %}

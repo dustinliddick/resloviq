@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+    <div class="p-6">
+        <h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-6">Server Troubleshooting Capture</h1>
+        
+        <!-- Issue Information -->
+        <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg mb-6">
+            <h2 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">Issue Information</h2>
+            <form id="issue-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input
+                    type="text"
+                    name="title"
+                    placeholder="Issue Title/Description"
+                    value="{{ session_data.issue_info.title }}"
+                    class="p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                />
+                <input
+                    type="text"
+                    name="server"
+                    placeholder="Server/Environment"
+                    value="{{ session_data.issue_info.server }}"
+                    class="p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                />
+                <input
+                    type="text"
+                    name="symptoms"
+                    placeholder="Initial Symptoms"
+                    value="{{ session_data.issue_info.symptoms }}"
+                    class="p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                />
+                <select
+                    name="priority"
+                    class="p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                >
+                    <option value="Low" {% if session_data.issue_info.priority == 'Low' %}selected{% endif %}>Low Priority</option>
+                    <option value="Medium" {% if session_data.issue_info.priority == 'Medium' %}selected{% endif %}>Medium Priority</option>
+                    <option value="High" {% if session_data.issue_info.priority == 'High' %}selected{% endif %}>High Priority</option>
+                    <option value="Critical" {% if session_data.issue_info.priority == 'Critical' %}selected{% endif %}>Critical</option>
+                </select>
+            </form>
+        </div>
+
+        <!-- Current Step Input -->
+        <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg mb-6">
+            <h2 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">Step {{ session_data.steps|length + 1 }}: Current Investigation</h2>
+            
+            <form id="step-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Command/Action:</label>
+                    <textarea
+                        name="command"
+                        placeholder="Paste your command here (e.g., systemctl status nginx)"
+                        class="w-full p-3 border rounded-lg font-mono text-sm h-24 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                    ></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Output/Result:</label>
+                    <textarea
+                        name="output"
+                        placeholder="Paste command output, error messages, or describe what you observed"
+                        class="w-full p-3 border rounded-lg font-mono text-sm h-32 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                    ></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Analysis/Notes (optional):</label>
+                    <textarea
+                        name="analysis"
+                        placeholder="What does this tell us? Why is this the next logical step?"
+                        class="w-full p-3 border rounded-lg text-sm h-20 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                    ></textarea>
+                </div>
+                
+                <button
+                    type="submit"
+                    class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 flex items-center gap-2"
+                >
+                    <i class="fas fa-plus"></i>
+                    Next Step
+                </button>
+            </form>
+        </div>
+
+        <!-- Steps Summary -->
+        {% if session_data.steps %}
+        <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg mb-6">
+            <div class="p-4 border-b dark:border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-white">Investigation Steps ({{ session_data.steps|length }})</h2>
+            </div>
+            
+            <div class="max-h-60 overflow-y-auto" id="steps-container">
+                {% for step in session_data.steps %}
+                <div class="p-4 border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-700" data-step-id="{{ step.id }}">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="font-medium text-sm text-gray-600 dark:text-gray-400">Step {{ step.id }}</div>
+                            {% if step.command %}
+                            <div class="mt-1">
+                                <span class="text-xs text-gray-500 dark:text-gray-400">Command:</span>
+                                <code class="block bg-gray-100 dark:bg-gray-700 p-1 rounded text-xs mt-1 truncate text-gray-900 dark:text-gray-100">
+                                    {{ step.command[:100] }}{% if step.command|length > 100 %}...{% endif %}
+                                </code>
+                            </div>
+                            {% endif %}
+                            {% if step.output %}
+                            <div class="mt-1">
+                                <span class="text-xs text-gray-500 dark:text-gray-400">Output:</span>
+                                <div class="bg-gray-100 dark:bg-gray-700 p-1 rounded text-xs mt-1 truncate text-gray-900 dark:text-gray-100">
+                                    {{ step.output[:100] }}{% if step.output|length > 100 %}...{% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <button
+                            onclick="removeStep({{ step.id }})"
+                            class="ml-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                        >
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Resolution Section -->
+        {% if session_data.steps %}
+        <div class="bg-green-50 dark:bg-green-900/30 p-4 rounded-lg mb-6">
+            <h2 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">Resolution Summary</h2>
+            
+            <form id="resolution-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Root Cause:</label>
+                    <textarea
+                        name="root_cause"
+                        placeholder="What was the underlying cause of the issue?"
+                        class="w-full p-3 border rounded-lg text-sm h-20 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                    >{{ session_data.resolution.root_cause }}</textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Solution Applied:</label>
+                    <textarea
+                        name="solution"
+                        placeholder="How was the issue resolved?"
+                        class="w-full p-3 border rounded-lg text-sm h-20 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                    >{{ session_data.resolution.solution }}</textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Resolution Commands:</label>
+                    <textarea
+                        name="fix_commands"
+                        placeholder="Commands used to fix the issue"
+                        class="w-full p-3 border rounded-lg font-mono text-sm h-24 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                    >{{ session_data.resolution.fix_commands }}</textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Verification Steps:</label>
+                    <textarea
+                        name="verification"
+                        placeholder="How did you verify the fix worked?"
+                        class="w-full p-3 border rounded-lg text-sm h-20 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                    >{{ session_data.resolution.verification }}</textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Prevention/Future Monitoring:</label>
+                    <textarea
+                        name="prevention"
+                        placeholder="What can be done to prevent this issue in the future?"
+                        class="w-full p-3 border rounded-lg text-sm h-20 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                    >{{ session_data.resolution.prevention }}</textarea>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="flex justify-center space-x-4 flex-wrap gap-4">
+            {% if session_data.steps %}
+            <button
+                id="complete-rca-btn"
+                class="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 flex items-center gap-2 text-lg transition-colors"
+            >
+                <i class="fas fa-clipboard-check"></i>
+                Complete RCA
+            </button>
+            
+            <a
+                href="{{ url_for('troubleshooting.generate_report') }}"
+                class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 flex items-center gap-2 text-lg transition-colors"
+            >
+                <i class="fas fa-file-text"></i>
+                Generate Technical Report
+            </a>
+            {% endif %}
+            
+            <form action="{{ url_for('troubleshooting.reset_session') }}" method="post" class="inline">
+                <button
+                    type="submit"
+                    class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2 transition-colors"
+                    onclick="return confirm('Are you sure you want to start a new issue? This will clear all current data.')"
+                >
+                    <i class="fas fa-undo"></i>
+                    Start New Issue
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
